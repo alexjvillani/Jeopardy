@@ -1,6 +1,9 @@
+# main.py
+
 import tkinter as tk
 from tkinter import simpledialog, messagebox, filedialog
 import json
+from game_screen import GameScreen  # Import the new GameScreen class
 
 class JeopardyApp(tk.Tk):
     def __init__(self):
@@ -12,7 +15,6 @@ class JeopardyApp(tk.Tk):
         self.category_names = []
         self.questions_data = {}
         self.player_names = []
-        self.current_player_index = 0
         
         self.setup_initial_ui()
 
@@ -109,42 +111,13 @@ class JeopardyApp(tk.Tk):
             self.start_game_button['state'] = 'normal'  # Enable Start Game button after loading
 
     def start_game(self):
-        num_players = simpledialog.askinteger("Players", "Enter number of players:")
+        # Prompt to enter player names before starting the game
+        num_players = simpledialog.askinteger("Players", "Enter the number of players:")
         if num_players:
-            self.player_names = []
-            for i in range(num_players):
-                player_name = simpledialog.askstring("Player Name", f"Enter name for Player {i + 1}:")
-                if player_name:
-                    self.player_names.append(player_name)
-
-            self.current_player_index = 0
-            messagebox.showinfo("Game Start", f"Players: {', '.join(self.player_names)}")
-            self.ask_question()
-
-    def ask_question(self):
-        category = simpledialog.askstring("Category", "Enter category:")
-        question_number = simpledialog.askinteger("Question Number", "Enter question number (1-7):")
-
-        if category in self.questions_data and 1 <= question_number <= len(self.questions_data[category]):
-            question_entry, answer_entry, points_entry = self.questions_data[category][question_number - 1]
-            question_text = question_entry.get()
-
-            if question_text:  # Ensure that the question text is not empty
-                answer = simpledialog.askstring("Question", question_text)
-                correct_answer = answer_entry.get()
-
-                # Logic to check answer can be added here
-                points = int(points_entry.get())  # Points based on the entry
-                if answer == correct_answer:
-                    messagebox.showinfo("Points", f"{self.player_names[self.current_player_index]} gets {points} points!")
-                else:
-                    messagebox.showinfo("Points", f"{self.player_names[self.current_player_index]} answered incorrectly.")
-                
-                self.current_player_index = (self.current_player_index + 1) % len(self.player_names)
-            else:
-                messagebox.showerror("Error", "No question found for the selected entry.")
-        else:
-            messagebox.showerror("Error", "Invalid category or question number.")
+            self.player_names = [simpledialog.askstring("Player Name", f"Enter name for player {i + 1}:") for i in range(num_players)]
+        
+        # Create GameScreen instance
+        GameScreen(self.category_names, self.questions_data, self.player_names)
 
 if __name__ == "__main__":
     app = JeopardyApp()
