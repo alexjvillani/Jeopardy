@@ -15,6 +15,7 @@ class JeopardyApp(tk.Tk):
         self.category_names = []
         self.questions_data = {}
         self.player_names = []
+        self.current_player_index = 0
         
         self.setup_initial_ui()
 
@@ -30,6 +31,9 @@ class JeopardyApp(tk.Tk):
 
         self.start_game_button = tk.Button(self, text="Start Game", command=self.start_game, state='disabled')
         self.start_game_button.pack(pady=10)
+
+        self.save_questions_button = tk.Button(self, text="Save Questions", command=self.save_questions)
+        self.save_questions_button.pack(pady=10)
 
     def setup_categories(self):
         num_categories = simpledialog.askinteger("Categories", "Enter number of categories (1-5):", minvalue=1, maxvalue=5)
@@ -111,13 +115,20 @@ class JeopardyApp(tk.Tk):
             self.start_game_button['state'] = 'normal'  # Enable Start Game button after loading
 
     def start_game(self):
-        # Prompt to enter player names before starting the game
-        num_players = simpledialog.askinteger("Players", "Enter the number of players:")
+        # Ask for the number of players
+        num_players = simpledialog.askinteger("Players", "Enter number of players:", minvalue=1, maxvalue=4)
         if num_players:
-            self.player_names = [simpledialog.askstring("Player Name", f"Enter name for player {i + 1}:") for i in range(num_players)]
-        
-        # Create GameScreen instance
-        GameScreen(self.category_names, self.questions_data, self.player_names)
+            self.player_names = []
+            for i in range(num_players):
+                player_name = simpledialog.askstring("Player Name", f"Enter name for player {i + 1}:")
+                if player_name:
+                    self.player_names.append(player_name)
+                else:
+                    messagebox.showerror("Error", "Player name cannot be empty.")
+                    return  # Exit if player name is empty
+
+            if len(self.player_names) > 0:
+                GameScreen(self.category_names, self.questions_data, self.player_names)  # Pass player names to GameScreen
 
 if __name__ == "__main__":
     app = JeopardyApp()
