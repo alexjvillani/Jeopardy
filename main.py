@@ -1,5 +1,3 @@
-# main.py
-
 import tkinter as tk
 from tkinter import simpledialog, messagebox, filedialog
 import json
@@ -9,7 +7,7 @@ class JeopardyApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Jeopardy Game")
-        self.geometry("600x400")
+        self.geometry("800x600")  # Increased window size for better visibility
         self.configure(bg="#f0f0f0")
         
         self.category_names = []
@@ -82,20 +80,30 @@ class JeopardyApp(tk.Tk):
         if file_path:
             with open(file_path, 'r') as file:
                 questions_data = json.load(file)
-            
+
             self.category_names = list(questions_data.keys())
             self.questions_data = {}
-            self.category_frame = tk.Frame(self)
-            self.category_frame.pack(pady=20)
+
+            # Create a canvas for scrolling
+            self.canvas = tk.Canvas(self)
+            self.scrollbar = tk.Scrollbar(self, orient="horizontal", command=self.canvas.xview)
+            self.scrollable_frame = tk.Frame(self.canvas)
+
+            self.scrollable_frame.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
+
+            self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+
+            self.scrollbar.pack(side="bottom", fill="x")
+            self.canvas.pack(side="top", fill="both", expand=True)
 
             for col, category in enumerate(self.category_names):
-                tk.Label(self.category_frame, text=category, bg="#f0f0f0", font=("Arial", 16)).grid(row=0, column=col)
+                tk.Label(self.scrollable_frame, text=category, bg="#f0f0f0", font=("Arial", 16)).grid(row=0, column=col)
 
                 self.questions_data[category] = []
                 for row in range(1, 8):
                     question_info = questions_data[category][row - 1] if row - 1 < len(questions_data[category]) else {'question': '', 'answer': '', 'points': 0}
                     
-                    question_frame = tk.Frame(self.category_frame)
+                    question_frame = tk.Frame(self.scrollable_frame)
                     question_frame.grid(row=row, column=col)
 
                     question_entry = tk.Entry(question_frame, width=30)
