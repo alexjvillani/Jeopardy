@@ -57,6 +57,9 @@ class GameScreen:
                 question_button.bind("<Enter>", lambda e: e.widget.config(bg="#f1a500"))
                 question_button.bind("<Leave>", lambda e: e.widget.config(bg="#f0c040"))
 
+        # Add an Edit Scores button on the game board
+        tk.Button(self.window, text="Edit Scores", command=self.edit_scores, bg="#007acc", fg="#ffffff", font=("Helvetica", 12)).grid(row=len(self.questions_data[self.category_names[0]]) + 2, column=0, columnspan=len(self.category_names), pady=10)
+
     def reveal_question(self, category, row):
         # Disable the button after it’s clicked
         question_button = self.question_buttons.get((category, row))
@@ -93,9 +96,38 @@ class GameScreen:
             tk.Button(answer_popup, text=player, command=lambda p=player, pts=points: self.update_score(answer_popup, p, pts),
                       bg="#007acc", fg="#ffffff", font=("Helvetica", 12)).pack(pady=2)
 
+        # Add No Points Awarded button
+        tk.Button(answer_popup, text="No Points Awarded", command=lambda: self.no_points(answer_popup)).pack(pady=5)
+
+    def no_points(self, popup):
+        # Close the popup and indicate no points awarded
+        popup.destroy()
+        messagebox.showinfo("Info", "No points awarded for this question.")
+
     def update_score(self, popup, player, points):
         # Update the player's score and refresh the scoreboard display
         self.scores[player] += points
         self.score_labels[player].config(text=f"Score: {self.scores[player]}")  # Update score label
         popup.destroy()
         messagebox.showinfo("Score Update", f"{player} now has {self.scores[player]} points!")
+
+    def edit_scores(self):
+        edit_popup = tk.Toplevel(self.window)
+        edit_popup.title("Edit Scores")
+        edit_popup.configure(bg="#ffffff")
+
+        for i, player in enumerate(self.player_names):
+            tk.Label(edit_popup, text=player, font=("Helvetica", 12), bg="#ffffff").grid(row=i, column=0)
+            score_entry = tk.Entry(edit_popup, width=5)
+            score_entry.insert(0, str(self.scores[player]))
+            score_entry.grid(row=i, column=1)
+            tk.Button(edit_popup, text="Update", command=lambda p=player, e=score_entry: self.update_score_direct(p, e)).grid(row=i, column=2)
+
+    def update_score_direct(self, player, entry):
+        new_score = entry.get()
+        try:
+            self.scores[player] = int(new_score)
+            self.score_labels[player].config(text=f"Score: {self.scores[player]}")  # Update score display
+            messagebox.showinfo("Score Update", f"{player}'s score updated to {self.scores[player]}!")
+        except ValueError:
+            messagebox.showerror("Error", "Invalid score! Please enter a number.")
